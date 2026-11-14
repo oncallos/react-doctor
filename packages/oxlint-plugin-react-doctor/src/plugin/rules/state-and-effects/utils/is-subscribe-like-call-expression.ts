@@ -1,3 +1,5 @@
+import type { ScopeAnalysis } from "../../../semantic/scope-analysis.js";
+import { isDataOnlyObserveCall } from "./is-data-only-observe-call.js";
 import {
   CLEANUP_RETURNING_SUBSCRIPTION_METHOD_NAMES,
   SUBSCRIPTION_METHOD_NAMES,
@@ -21,16 +23,27 @@ export const isSubscribeLikeCallExpression = (node: EsTreeNode): boolean => {
   return methodName !== null && SUBSCRIPTION_METHOD_NAMES.has(methodName);
 };
 
-export const getSubscribeOrObserveMethodName = (node: EsTreeNode): string | null => {
+export const getSubscribeOrObserveMethodName = (
+  node: EsTreeNode,
+  scopes?: ScopeAnalysis,
+): string | null => {
   const methodName = getSubscribeLikeMethodName(node);
+  if (
+    methodName === OBSERVER_REGISTRATION_METHOD_NAME &&
+    scopes &&
+    isDataOnlyObserveCall(node, scopes)
+  )
+    return null;
   const isSubscribeOrObserve =
     methodName !== null &&
     (SUBSCRIPTION_METHOD_NAMES.has(methodName) || methodName === OBSERVER_REGISTRATION_METHOD_NAME);
   return isSubscribeOrObserve ? methodName : null;
 };
 
-export const isSubscribeOrObserveCallExpression = (node: EsTreeNode): boolean =>
-  getSubscribeOrObserveMethodName(node) !== null;
+export const isSubscribeOrObserveCallExpression = (
+  node: EsTreeNode,
+  scopes?: ScopeAnalysis,
+): boolean => getSubscribeOrObserveMethodName(node, scopes) !== null;
 
 export const isCleanupReturningSubscribeLikeCallExpression = (node: EsTreeNode): boolean => {
   const methodName = getSubscribeLikeMethodName(node);

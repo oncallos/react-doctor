@@ -1740,7 +1740,7 @@ const collectEffectOwnedResourceCallbackFunctions = (
         if (promiseCallback && isAstNode(promiseCallback)) {
           callbackArgument = promiseCallback;
         }
-        const registrationVerbName = getSubscribeOrObserveMethodName(child);
+        const registrationVerbName = getSubscribeOrObserveMethodName(child, context.scopes);
         if (registrationVerbName !== null) {
           const registrationDetails = getCallRegistrationDetails(child, context);
           callbackArgument = getSubscribeUsageCallbackArgument({
@@ -1824,7 +1824,7 @@ const findSubscribeLikeUsages = (
       return;
     }
 
-    const subscribeOrObserveMethodName = getSubscribeOrObserveMethodName(child);
+    const subscribeOrObserveMethodName = getSubscribeOrObserveMethodName(child, context.scopes);
     if (subscribeOrObserveMethodName !== null) {
       const registrationDetails = getCallRegistrationDetails(child, context);
       usages.push({
@@ -11026,7 +11026,7 @@ const findRetainedFunctionLeak = (
     }
 
     if (
-      isSubscribeOrObserveCallExpression(child) &&
+      isSubscribeOrObserveCallExpression(child, context.scopes) &&
       (!doesResourceResultEscape(
         child,
         allowReturnedResourceEscape,
